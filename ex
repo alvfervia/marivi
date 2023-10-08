@@ -251,4 +251,143 @@ end
 
 
 
+function Autofun(n)
+
+%------------------------------------------------------------------
+%  Calculo de un autovalor próximo a n^2 y una autofuncion de
+%
+%  | - y'' + 2*cos(2x)) y = \lambda y
+%  | y(0)  = 0
+%  | y(pi) = 0
+%  Se impone la condicion adicional y'(0) = 1
+%  para normalizar la autofuncion
+%------------------------------------------------------------------
+%  Los autovalores de estos problemas se comportan asintoticamente
+%  como n^2 y los ceros de las autofunciones separan los ceros de
+%  las autofunciones del siguiente autovalor.
+%------------------------------------------------------------------
+%  Argumento de entrada:
+%     n    : valor para proporcionar la aproximación inicial
+%            Se toma n^2 como aprox. inicial del autovalor y
+%            sin(n*x) como aproximación de la
+%            autofunción.
+%            Para elegir una entre todas las autofunciones se
+%            impone la condición adicional y'(0) = 1.
+%------------------------------------------------------------------
+
+Preparacion
+
+dydx = @(x,y,lambda) [ y(2); (2*cos(2*x)-lambda)*y(1)];
+
+condcon = @(ya, yb, ~) [ya(1); yb(1); ya(2)-1 ];
+
+tguess    = linspace(0, pi, 10);
+yfunguess = @(x) [ sin(n*x); n*cos(n*x) ];
+solinit = bvpinit(tguess, yfunguess, n^2);
+
+options = bvpset('stats','on', 'RelTol', 1.e-4);
+
+Resolucion numerica
+
+sol = bvp4c(dydx, condcon, solinit, options);
+
+The solution was obtained on a mesh of 83 points.
+The maximum residual is  9.952e-05. 
+There were 3011 calls to the ODE function. 
+There were 66 calls to the BC function. 
+
+Representacion grafica
+
+xx     = linspace(0,pi,150);
+yy     = deval(sol, xx, 1);
+yyg    = yfunguess(xx);
+lambda = sol.parameters;
+
+close all
+axis([0,pi,-1.5, 1.5])
+hold on
+leg1 = ['Autofuncion asoc. a autovalor = ',num2str(lambda)];
+leg2 = 'Inicializacion de la solucion';
+plot(xx, yyg(1,:),'g', 'LineWidth',1)
+plot(xx, yy,      'b', 'LineWidth',2)
+lgd = legend(leg1, leg2);
+set(lgd, 'FontSize', 14)
+
+hold off
+shg
+
+end
+
+
+
+
+function Autofun2(n, funcoef)
+
+%------------------------------------------------------------------
+%  Calculo de un autovalor y una autofuncion de
+%
+%  | -y'' + f(x) y = \lambda y
+%  | y(0)  = 0
+%  | y(pi) = 0
+%  Se impone la condicion adicional y'(0) = 1
+%  para normalizar la autofuncion
+%------------------------------------------------------------------
+%  Los autovalores de estos problemas se comportan asintoticamente
+%  como n^2 y los ceros de las autofunciones separan los ceros de
+%  las autofunciones del siguiente autovalor.
+%------------------------------------------------------------------
+%  Argumento de entrada:
+%     n       : valor para proporcionar la aproximación inicial
+%               Se toma n^2 como aprox. inicial del autovalor y
+%               sin( n*x ) como aproximación de la autofunción.
+%               Para elegir una entre todas las autofunciones se
+%               impone la condición adicional y'(0) = 1.
+%     funcoef : un manipulador de la funcion f(x) que multiplica a y
+%------------------------------------------------------------------
+%
+
+Preparacion
+
+dydx = @(x,y,lambda) [ y(2); (funcoef(x)-lambda)*y(1)];
+
+condcon = @(ya, yb, ~) [ya(1); yb(1); ya(2)-1 ];
+
+tguess    = linspace(0, pi, 10);
+yfunguess = @(x) [ sin(n*x); n*cos(n*x) ];
+solinit = bvpinit(tguess, yfunguess, n^2);
+
+options = bvpset('stats','on', 'RelTol', 1.e-4);
+
+Resolucion
+
+sol = bvp4c(dydx, condcon, solinit, options);
+
+%  Representacion grafica
+%
+xx = linspace(0,pi,150);
+yy = deval(sol, xx, 1);
+yyg = yfunguess(xx);
+lambda = sol.parameters;
+
+close all
+axis([0,pi,-1.5, 1.5])
+hold on
+
+leg1 = [' Autofuncion asoc. a autovalor= ',num2str(lambda)];
+leg2 =  ' Inicializacion de la solucion ';
+plot(xx, yy,      'b', 'LineWidth',2)
+plot(xx, yyg(1,:),'g', 'LineWidth',1)
+
+lgd = legend(leg1, leg2);
+set(lgd, 'FontSize', 14)
+
+hold off
+shg
+
+end
+
+
+
+
+
 
