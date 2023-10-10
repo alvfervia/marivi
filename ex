@@ -391,3 +391,91 @@ end
 
 
 
+function UmbralTecho(r, N1, N2, N0, T)
+
+%----------------------------------------------------------------
+%  Modelo de poblaciones
+%
+%  | N' = r*(N-N1)(N2-N) en [0,T]
+%  | N(0) = N0
+%
+%  N(t)     : numero de individuos en el instante t
+%----------------------------------------------------------------
+%  Utilizacion:
+%  UmbralTecho(r, N1, N2, N0, T)
+%
+%  Argumentos de entrada:
+%  r   : constante de crecimiento
+%  N1  : umbral
+%  N2  : techo
+%  N0  : el dato inicial
+%  T   : tiempo final
+%
+%----------------------------------------------------------------
+%  Pruebas interesantes:
+%  UmbralTecho(5.e-8, 1.e+3, 1.e+6, 2.e+5,  200)
+%  UmbralTecho(5.e-8, 1.e+3, 1.e+6, 2.e+4,  200)
+%  UmbralTecho(5.e-8, 1.e+3, 1.e+6, 4.e+5,  200)
+%  UmbralTecho(5.e-8, 1.e+3, 1.e+6, 1.5e+6, 200)
+%----------------------------------------------------------------
+%
+
+Datos
+
+y0  = N0;
+y02 = 2.*y0;
+
+Resolucion
+
+pobl      = @(t,y) r*(y-N1)*(N2-y);
+[times,y] = ode45(pobl, [0, T], y0);
+
+Nmax = 1.3*max(y02, N2);
+Nmin = - 0.3*Nmax;
+
+close all
+axis([0, T, Nmin, Nmax])
+hold on;
+%
+plot([0, T], [N1, N1], 'k',   'LineWidth', 1.1)
+plot([0, T], [N2, N2], 'k',   'LineWidth', 1.1)
+plot(times, y,                'LineWidth', 1.1)
+plot(0, y0, 'r.',             'MarkerSize', 20)
+plot([0, T], [y02, y02], 'g', 'LineWidth', 1.1)
+
+title(['Evolucion del modelo Umbral-Techo para t en [0,', ...
+       num2str(T),']'], 'FontSize', 14)
+
+Tiempo en que la poblacion se dobla
+
+if (N1 < y0 && y02 < N2)
+    pob   = @(tau) interp1(times,y,tau) - y02;
+    tcrit = fzero(pob,20.);
+    msg   = ['La poblacion se dobla en el tiempo t = ', num2str(tcrit)];
+    flag  = true;
+else
+    msg   = 'La poblacion no se dobla';
+    flag  = false;
+end
+
+text(10, Nmin/2, msg, 'FontSize', 14)
+
+if flag
+    plot(tcrit, y02, 'k.', 'MarkerSize', 20)
+end
+
+legend(['Umbral : y = ',             num2str(N1)], ...
+       ['Techo  : y = ',             num2str(N2)], ...
+        'Poblacion',...
+       ['Dato inicial y(0) = ',      num2str(y0)], ...
+       ['Doble del dato inicial = ', num2str(y02)], ...
+        'Location', 'Best');
+
+hold off
+shg
+
+
+Published with MATLAB
+Asignatura Modelizacion Matematica - Grado en Matematicas - Dpto. EDAN - Universidad de Sevilla
+
+
